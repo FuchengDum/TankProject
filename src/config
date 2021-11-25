@@ -1,0 +1,5 @@
+initTankCount = 5
+
+tankFireStrategy = DefaultFireStrategy
+
+colliders = BulletTankCollider,BulletWallCollider,TankWallCollider,TankTankCollider
