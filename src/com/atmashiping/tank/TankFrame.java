@@ -3,37 +3,26 @@ package com.atmashiping.tank;
 import com.atmashiping.tank.chainofresponsibility.BulletTankCollider;
 import com.atmashiping.tank.chainofresponsibility.BulletWallCollider;
 import com.atmashiping.tank.chainofresponsibility.Collider;
-import com.atmashiping.tank.chainofresponsibility.ColliderChain;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.util.ArrayList;
-import java.util.List;
 
 public class TankFrame extends Frame {
     public static final TankFrame INSTANCE = new TankFrame();
 
-    private Player mytank;
 
-    List<AbstractGameObject> objects ;
-//    private List<Explode> explodes;
-//    private List<Tank> enermys;
-//    private List<Bullet> bullets;
-
-    //List<Collider> colliders;
-    ColliderChain chain = new ColliderChain();
     public static final int GAME_WIDTH = 800;
     public static final int GAME_HEIGHT = 600;
-    //Explode e = new Explode(150,150);
 
+    private GameModel gm = new GameModel();
     private TankFrame(){
         this.setTitle("tank war");
         this.setLocation(400,100);
         this.setSize(800,600);
         this.addKeyListener(new TankKeyListener());
 
-        initGameObjects();
+        //initGameObjects();
 
         //initColliders();
     }
@@ -52,21 +41,9 @@ public class TankFrame extends Frame {
 //        }
 //    }
 
-    private void initGameObjects() {
-        mytank = new Player(100,100,Dir.R,Group.GOOD);
-        objects = new ArrayList<>();
 
-        int tankCount = Integer.parseInt(PropertyMgr.get("initTankCount"));
-        for (int i = 0; i < tankCount; i++) {
-            this.add(new Tank(100 + 200*i,100,Dir.D,Group.BAD));
-        }
 
-        this.add(new Wall(300,200,200,50));
-    }
 
-    public void add(AbstractGameObject AGO){
-        objects.add(AGO);
-    }
 
 //    public void add(Bullet bullet){
 //        this.bullets.add(bullet);
@@ -77,36 +54,9 @@ public class TankFrame extends Frame {
 
     @Override
     public void paint(Graphics g){
-        Color c = g.getColor();
-        g.setColor(Color.WHITE);
-//        g.drawString("BULLETS:"+ bullets.size(),10,50);
-//        g.drawString("Enemys:"+ enermys.size(),10,70);
-//        g.drawString("explode:"+ enermys.size(),10,90);
 
-        g.setColor(c);
-        //e.paint(g);
+        gm.paint(g);
 
-        mytank.paint(g);
-
-        for (int i = 0; i < objects.size(); i++) {
-            AbstractGameObject ago = objects.get(i);
-
-            if (!objects.get(i).isLive()){
-                objects.remove(i);
-                break;
-            }
-
-                for (int j = 0; j < objects.size(); j++) {
-                    AbstractGameObject ago2 = objects.get(j);
-//                    collider.collide(ago,ago2);
-//                    collider2.collide(ago,ago2);
-                    chain.collide(ago,ago2);
-                }
-            if (objects.get(i).isLive()){
-                objects.get(i).paint(g);
-            }
-
-        }
 //        for (int i = 0; i < enermys.size(); i++) {
 //            if (!enermys.get(i).isLive()){
 //                enermys.remove(i);
@@ -169,14 +119,16 @@ public class TankFrame extends Frame {
 
         @Override
         public void keyPressed(KeyEvent e) {
-            mytank.keyPressed(e);
+            gm.getMytank().keyPressed(e);
         }
 
         @Override
         public void keyReleased(KeyEvent e) {
-            mytank.keyReleased(e);
+            gm.getMytank().keyReleased(e);
         }
     }
 
-
+    public GameModel getGm() {
+        return gm;
+    }
 }

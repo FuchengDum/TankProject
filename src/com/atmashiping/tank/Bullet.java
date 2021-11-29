@@ -78,7 +78,7 @@ public class Bullet extends AbstractGameObject{
         return rect;
     }
 
-    public void collidesWithTank(Tank tank) {
+/*    public void collidesWithTank(Tank tank) {
         if (!this.isLive() || !tank.isLive()) return;
         if (this.group == tank.getGroup()) return;
 
@@ -90,7 +90,7 @@ public class Bullet extends AbstractGameObject{
             this.die();
             tank.die();
         }
-    }
+    }*/
 
     //子弹需要做个边界检查
     private void boundsCheck() {
