@@ -7,6 +7,7 @@ import com.atmashiping.tank.chainofresponsibility.Collider;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.*;
 
 public class TankFrame extends Frame {
     public static final TankFrame INSTANCE = new TankFrame();
@@ -119,12 +120,60 @@ public class TankFrame extends Frame {
 
         @Override
         public void keyPressed(KeyEvent e) {
-            gm.getMytank().keyPressed(e);
+            int key = e.getKeyCode();
+            if (key == KeyEvent.VK_S) //save
+                save();
+            else if (key == KeyEvent.VK_L)
+                load();
+            else gm.getMytank().keyPressed(e);
         }
 
         @Override
         public void keyReleased(KeyEvent e) {
             gm.getMytank().keyReleased(e);
+        }
+    }
+
+    private void save() {
+        ObjectOutputStream oos =null;
+        try {
+            File file = new File("C:\\Users\\WIN10\\Desktop\\test\\tank.dat");
+            FileOutputStream fos = new FileOutputStream(file);
+            oos = new ObjectOutputStream(fos);
+            oos.writeObject(gm);
+            oos.flush();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }finally {
+            if (oos !=  null) {
+                try {
+                    oos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public void load(){
+        ObjectInputStream ois = null;
+        try {
+            File file = new File("C:\\Users\\WIN10\\Desktop\\test\\tank.dat");
+
+            FileInputStream fis = new FileInputStream(file);
+            ois = new ObjectInputStream(fis);
+            this.gm= (GameModel) ois.readObject();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }finally {
+            if (ois !=  null) {
+                try {
+                    ois.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
