@@ -1,6 +1,6 @@
 package com.atmashiping.tank;
 
-import java.util.concurrent.TimeUnit;
+import com.atmashiping.tank.net.Client;
 
 public class Main {
     public static void main(String[] args) {
@@ -9,14 +9,17 @@ public class Main {
         f.setVisible(true);
         //new Thread(()->new Audio("audio/war1.wav").loop()).start();
 
-
-        for (;;){
-            try{
-                Thread.sleep(25);
-            }catch (InterruptedException e){
-                e.printStackTrace();
-            }
+        new Thread(()->{
+            for (;;){
+                try{
+                    Thread.sleep(25);
+                }catch (InterruptedException e){
+                    e.printStackTrace();
+                }
                 f.repaint();
-        }
+            }
+        }).start();
+
+        Client.INSTANCE.connect();
     }
 }

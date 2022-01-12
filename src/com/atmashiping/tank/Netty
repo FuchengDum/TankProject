@@ -1,0 +1,6 @@
+Netty
+网络框架，封装了JDK NIO
+产品： zookeeper tomcat elastic search dubbo
+公司： apple facebook
+
+分水岭： netty jvm 高并发编程 大流量架构 数据结构与算法

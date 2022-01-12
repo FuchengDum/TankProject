@@ -1,0 +1,34 @@
+2021.12.31
+Netty 入门级小项目 17-坦克大战设计模式
+1、ClientFrame ---> Client --msg-> 服务器
+
+Server 关闭流程
+1、通知客户端备份数据
+2、拒绝新的连接
+3、等待时间，看到的客户端处理完成
+4、关闭流程，迭代发送关闭 消息，客户端收到关闭信息进行自动处理。（服务器已断开连接
+5、确认所有客户端断开
+6、Server保存现有的工资数据
+7、停止线程组
+8、退出
+
+
+2021.1.1
+Encoder Decoder
+--Msg->Encode---bytes-->Decoder--Msg-->
+1、以字符串.getBytes()转成字节数组进行 传输
+2、以int类型传输
+
+两种方式：
+第二种好，字符串长度不固定，编码不固定，语言不固定
+转字符串效率低，内存copy不用转，直接copy
+
+TCP Fragment and Defragment (拆与粘)
+
+Unit Test on Codec
+Embedded Channel
+
+2021.1.10
+完成MsgDecoder 和 MsgEncoder 编码及单元测试
+将TankMsg 同步显示在客户端
+服务端收到客户端的Msg如何处理，目前移动的信息无法及时传达

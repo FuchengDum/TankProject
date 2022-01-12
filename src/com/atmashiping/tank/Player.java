@@ -4,21 +4,24 @@ import com.atmashiping.tank.strategy.FireStrategy;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.util.UUID;
 
-public class Player extends AbstractGameObject{
-    private int x,y;
+public class Player extends AbstractGameObject {
+    public static final int SPEED = 5;
+    private int x, y;
     private Dir dir;
-    private boolean bL,bR,bU,bD;
+    private boolean bL, bR, bU, bD;
     private boolean moving;
     private Group group;
-
-    public static final int SPEED = 5;
     private boolean live = true;
+
+    private UUID id = UUID.randomUUID();
 
     //传递TankFrame的引用;使用单例模式
     //TankFrame tf;
+    private FireStrategy strategy = null;
 
-    public Player(int x , int y, Dir dir, Group group){
+    public Player(int x, int y, Dir dir, Group group) {
         this.x = x;
         this.y = y;
         this.dir = dir;
@@ -27,21 +30,29 @@ public class Player extends AbstractGameObject{
         this.initFireStrategy();
     }
 
-    public void paint(Graphics g) {
-        if(!this.isLive()) return;
 
-        switch (dir){
+
+    public void paint(Graphics g) {
+        if (!this.isLive()) return;
+
+        Color color = g.getColor();
+        g.setColor(Color.yellow);
+        g.drawString(id.toString(),x,y-10);
+        g.setColor(color);
+
+
+        switch (dir) {
             case L:
-                g.drawImage(ResourceMgr.goodTankL,x,y,null);
+                g.drawImage(this.group.equals(Group.BAD)?ResourceMgr.badTankL:ResourceMgr.goodTankL,x,y,null);
                 break;
             case U:
-                g.drawImage(ResourceMgr.goodTankU,x,y,null);
+                g.drawImage(this.group.equals(Group.BAD)?ResourceMgr.badTankU:ResourceMgr.goodTankU,x,y,null);
                 break;
             case R:
-                g.drawImage(ResourceMgr.goodTankR,x,y,null);
+                g.drawImage(this.group.equals(Group.BAD)?ResourceMgr.badTankR:ResourceMgr.goodTankR,x,y,null);
                 break;
             case D:
-                g.drawImage(ResourceMgr.goodTankD,x,y,null);
+                g.drawImage(this.group.equals(Group.BAD)?ResourceMgr.badTankD:ResourceMgr.goodTankD,x,y,null);
                 break;
         }
 
@@ -50,7 +61,7 @@ public class Player extends AbstractGameObject{
 
     public void keyPressed(KeyEvent e) {
         int key = e.getKeyCode();
-        switch (key){
+        switch (key) {
             case KeyEvent.VK_LEFT:
                 bL = true;
                 break;
@@ -64,7 +75,7 @@ public class Player extends AbstractGameObject{
                 bD = true;
                 break;
         }
-            setMainDir();
+        setMainDir();
     }
 
     private void setMainDir() {
@@ -86,9 +97,9 @@ public class Player extends AbstractGameObject{
 
     }
 
-    private void move(){
+    private void move() {
         if (!moving) return;
-        switch (dir){
+        switch (dir) {
             case L:
                 x -= SPEED;
                 break;
@@ -106,7 +117,7 @@ public class Player extends AbstractGameObject{
 
     public void keyReleased(KeyEvent e) {
         int key = e.getKeyCode();
-        switch (key){
+        switch (key) {
             case KeyEvent.VK_LEFT:
                 bL = false;
                 break;
@@ -123,15 +134,13 @@ public class Player extends AbstractGameObject{
                 fire();
                 break;
         }
-            setMainDir();
+        setMainDir();
     }
 
-    private FireStrategy strategy = null;
-
-    private void initFireStrategy(){
+    private void initFireStrategy() {
         String className = PropertyMgr.get("tankFireStrategy");
         try {
-            Class clazz = Class.forName("com.atmashiping.tank.strategy."+className);
+            Class clazz = Class.forName("com.atmashiping.tank.strategy." + className);
             strategy = (FireStrategy) clazz.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
             e.printStackTrace();
@@ -149,11 +158,11 @@ public class Player extends AbstractGameObject{
 
     }
 
-    public int getX(){
+    public int getX() {
         return this.x;
     }
 
-    public int getY(){
+    public int getY() {
         return this.y;
     }
 
@@ -161,7 +170,7 @@ public class Player extends AbstractGameObject{
         this.setLive(false);
     }
 
-    public boolean isLive(){
+    public boolean isLive() {
         return this.live;
     }
 
@@ -173,7 +182,15 @@ public class Player extends AbstractGameObject{
         return group;
     }
 
-    public Dir getDir(){
+    public Dir getDir() {
         return dir;
+    }
+
+    public boolean isMoving(){
+        return this.moving;
+    }
+
+    public UUID getId(){
+        return this.id;
     }
 }

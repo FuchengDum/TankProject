@@ -1,4 +1,4 @@
-initTankCount = 5
+initTankCount = 0
 
 tankFireStrategy = DefaultFireStrategy
 
