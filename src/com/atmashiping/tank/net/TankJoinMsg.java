@@ -5,8 +5,8 @@ import com.atmashiping.tank.*;
 import java.io.*;
 import java.util.UUID;
 
-public class TankJoinMsg {
-    private int x,y;
+public class TankJoinMsg extends Msg {
+    private int x, y;
     private Dir dir;
     private boolean moving;
     private Group group;
@@ -16,13 +16,13 @@ public class TankJoinMsg {
     public TankJoinMsg() {
     }
 
-    public TankJoinMsg(Player p){
+    public TankJoinMsg(Player p) {
         this.x = p.getX();
         this.y = p.getY();
         this.dir = p.getDir();
         this.moving = p.isMoving();
         this.group = p.getGroup();
-        this.id =  p.getId();
+        this.id = p.getId();
     }
 
 
@@ -50,7 +50,7 @@ public class TankJoinMsg {
         return id;
     }
 
-    public byte[] toBytes(){
+    public byte[] toBytes() {
         ByteArrayOutputStream baos = null;
         DataOutputStream dos = null;
         byte[] bytes = null;
@@ -72,16 +72,16 @@ public class TankJoinMsg {
             bytes = baos.toByteArray();
         } catch (IOException e) {
             e.printStackTrace();
-        }finally {
+        } finally {
             try {
-                if (baos!=null)
+                if (baos != null)
                     baos.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
             try {
-                if (dos!=null)
+                if (dos != null)
                     dos.close();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -92,17 +92,17 @@ public class TankJoinMsg {
 
     public void parse(byte[] bytes) {
         DataInputStream dis = new DataInputStream(new ByteArrayInputStream(bytes));
-        try{
+        try {
             this.x = dis.readInt();
             this.y = dis.readInt();
             this.dir = dir.values()[dis.readInt()];
             this.moving = dis.readBoolean();
             this.group = group.values()[dis.readInt()];
-            this.id = new UUID(dis.readLong(),dis.readLong());
+            this.id = new UUID(dis.readLong(), dis.readLong());
 
-        }catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
-        }finally {
+        } finally {
             try {
                 dis.close();
             } catch (IOException e) {
@@ -124,7 +124,7 @@ public class TankJoinMsg {
     }
 
     public void handle() {
-        if(this.id.equals(TankFrame.INSTANCE.getGm().getMytank().getId())) return;
+        if (this.id.equals(TankFrame.INSTANCE.getGm().getMytank().getId())) return;
 
         if (TankFrame.INSTANCE.getGm().findByUUID(this.id) != null) return;
 
@@ -133,5 +133,10 @@ public class TankJoinMsg {
         TankFrame.INSTANCE.getGm().add(tank);
 
         Client.INSTANCE.send(new TankJoinMsg(TankFrame.INSTANCE.getGm().getMytank()));
+    }
+
+    @Override
+    public MsgType getMsgType() {
+        return MsgType.TankJoin;
     }
 }

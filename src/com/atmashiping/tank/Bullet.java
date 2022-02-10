@@ -1,47 +1,62 @@
 package com.atmashiping.tank;
 
 import java.awt.*;
+import java.util.UUID;
 
-public class Bullet extends AbstractGameObject{
-    private int x,y;
+public class Bullet extends AbstractGameObject {
+
+    public static final int SPEED = 10;
+    private int x, y;
     private Dir dir;
     private boolean live = true;
     private int w = ResourceMgr.bulletU.getWidth();
     private int h = ResourceMgr.bulletU.getHeight();
     private Rectangle rect;
-
-    public static final int SPEED = 10;
-
-    public Group getGroup() {
-        return group;
-    }
-
+    private UUID id = UUID.randomUUID();
+    private UUID playerId;
     private Group group;
 
-    public Bullet (int x, int y,Dir dir,Group group){
+    public Bullet(UUID playerId, int x, int y, Dir dir, Group group) {
+        this.playerId = playerId;
         this.x = x;
         this.y = y;
         this.dir = dir;
         this.group = group;
 
-        rect = new Rectangle(x,y,w,h);
+        rect = new Rectangle(x, y, w, h);
+    }
+
+    public Group getGroup() {
+        return group;
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public Dir getDir() {
+        return dir;
     }
 
     public void paint(Graphics g) {
-            switch (dir){
-                case L:
-                    g.drawImage(ResourceMgr.bulletL,x,y,null);
-                    break;
-                case U:
-                    g.drawImage(ResourceMgr.bulletU,x,y,null);
-                    break;
-                case R:
-                    g.drawImage(ResourceMgr.bulletR,x,y,null);
-                    break;
-                case D:
-                    g.drawImage(ResourceMgr.bulletD,x,y,null);
-                    break;
-            }
+        switch (dir) {
+            case L:
+                g.drawImage(ResourceMgr.bulletL, x, y, null);
+                break;
+            case U:
+                g.drawImage(ResourceMgr.bulletU, x, y, null);
+                break;
+            case R:
+                g.drawImage(ResourceMgr.bulletR, x, y, null);
+                break;
+            case D:
+                g.drawImage(ResourceMgr.bulletD, x, y, null);
+                break;
+        }
         move();
         //更新子弹方块的位置
         rect.x = x;
@@ -54,7 +69,7 @@ public class Bullet extends AbstractGameObject{
     }
 
     private void move() {
-        switch (dir){
+        switch (dir) {
             case L:
                 x -= SPEED;
                 break;
@@ -94,12 +109,12 @@ public class Bullet extends AbstractGameObject{
 
     //子弹需要做个边界检查
     private void boundsCheck() {
-        if (x < 0 || y < 30 || x>TankFrame.GAME_WIDTH || y>TankFrame.GAME_HEIGHT){
+        if (x < 0 || y < 30 || x > TankFrame.GAME_WIDTH || y > TankFrame.GAME_HEIGHT) {
             live = false;
         }
     }
 
-    public void die(){
+    public void die() {
         this.setLive(false);
     }
 
@@ -112,4 +127,15 @@ public class Bullet extends AbstractGameObject{
     }
 
 
+    public UUID getId() {
+        return this.id;
+    }
+
+    public UUID getPlayerId() {
+        return this.playerId;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
 }

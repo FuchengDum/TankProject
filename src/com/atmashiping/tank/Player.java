@@ -1,5 +1,8 @@
 package com.atmashiping.tank;
 
+import com.atmashiping.tank.net.Client;
+import com.atmashiping.tank.net.TankMoveOrDirChangeMsg;
+import com.atmashiping.tank.net.TankStopMsg;
 import com.atmashiping.tank.strategy.FireStrategy;
 
 import java.awt.*;
@@ -79,21 +82,40 @@ public class Player extends AbstractGameObject {
     }
 
     private void setMainDir() {
-        if (!bL && !bD && !bR && !bU)
+        boolean oldMoving = moving;
+
+        Dir oldDir = dir;
+
+        if (!bL && !bD && !bR && !bU){
             moving = false;
-        else
+            //send stop msg
+            Client.INSTANCE.send(new TankStopMsg(this.id, this.x, this.y));
+
+        }
+
+        else {
             moving = true;
-        if (bL && !bD && !bR && !bU)
-            dir = Dir.L;
+            if (bL && !bD && !bR && !bU)
+                dir = Dir.L;
 
-        if (!bL && bD && !bR && !bU)
-            dir = Dir.D;
+            if (!bL && bD && !bR && !bU)
+                dir = Dir.D;
 
-        if (!bL && !bD && bR && !bU)
-            dir = Dir.R;
+            if (!bL && !bD && bR && !bU)
+                dir = Dir.R;
 
-        if (!bL && !bD && !bR && bU)
-            dir = Dir.U;
+            if (!bL && !bD && !bR && bU)
+                dir = Dir.U;
+
+            //old status is not moving
+            if (!oldMoving)
+                //send moving msg
+                Client.INSTANCE.send(new TankMoveOrDirChangeMsg(this.id, this.x, this.y, this.dir));
+
+            if (!this.dir.equals(oldDir))
+                Client.INSTANCE.send(new TankMoveOrDirChangeMsg(this.id, this.x, this.y, this.dir));
+
+        }
 
     }
 
@@ -155,7 +177,6 @@ public class Player extends AbstractGameObject {
         //FireStrategy strategy = new LeftRightFireStrategy();
         strategy.fire(this);
 
-
     }
 
     public int getX() {
@@ -168,6 +189,7 @@ public class Player extends AbstractGameObject {
 
     public void die() {
         this.setLive(false);
+        TankFrame.INSTANCE.getGm().add(new Explode(x,y));
     }
 
     public boolean isLive() {

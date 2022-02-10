@@ -2,8 +2,9 @@ package com.atmashiping.tank.chainofresponsibility;
 
 import com.atmashiping.tank.AbstractGameObject;
 import com.atmashiping.tank.Bullet;
-import com.atmashiping.tank.ResourceMgr;
 import com.atmashiping.tank.Tank;
+import com.atmashiping.tank.net.Client;
+import com.atmashiping.tank.net.TankDieMsg;
 
 import java.awt.*;
 
@@ -27,6 +28,7 @@ public class BulletTankCollider implements Collider {
             if (b.getRect().intersects(rectTank)){
                 b.die();
                 t.die();
+                Client.INSTANCE.send(new TankDieMsg(t.getId(),b.getId()));
                 return false;
             }
         }else if (ago1 instanceof Tank && ago2 instanceof Bullet){

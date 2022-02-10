@@ -11,6 +11,11 @@ public class Tank extends AbstractGameObject{
     private int x,y;
     private Dir dir;
     private boolean bL,bR,bU,bD;
+
+    public void setMoving(boolean moving) {
+        this.moving = moving;
+    }
+
     private boolean moving = true;
     private Group group;
     private int width,height;
@@ -19,7 +24,9 @@ public class Tank extends AbstractGameObject{
     public static final int SPEED = 5;
     private boolean live = true;
 
-    private UUID id;
+    private UUID tid = UUID.randomUUID();
+    private UUID id ;
+
     private int oldX,oldY;
     //传递TankFrame的引用;使用单例模式
     //TankFrame tf;
@@ -43,7 +50,7 @@ public class Tank extends AbstractGameObject{
         this.group = msg.getGroup();
         this.moving = msg.isMoving();
         this.id = msg.getId();
-        
+
         this.oldX = x;
         this.oldY = y;
 
@@ -110,9 +117,9 @@ public class Tank extends AbstractGameObject{
 
         boundsCheck();
 
-        randomDir();
-        if (random.nextInt(100)>90)
-            fire();
+//        randomDir();
+//        if (random.nextInt(100)>90)
+//            fire();
     }
 
     private Random random = new Random();
@@ -141,7 +148,7 @@ public class Tank extends AbstractGameObject{
     private void fire() {
         int bX = x + ResourceMgr.goodTankU.getWidth()/2 - ResourceMgr.bulletU.getWidth()/2;
         int bY = y + ResourceMgr.goodTankU.getHeight()/2 - ResourceMgr.bulletU.getHeight()/2;
-        TankFrame.INSTANCE.getGm().add(new Bullet(bX, bY, dir, group));
+        TankFrame.INSTANCE.getGm().add(new Bullet(this.id,bX, bY, dir, group));
     }
 
     public int getX(){
@@ -171,6 +178,18 @@ public class Tank extends AbstractGameObject{
     }
 
     public UUID getId() {
-        return id;
+        return this.id;
+    }
+
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    public void setY(int y) {
+        this.y = y;
+    }
+
+    public void setDir(Dir dir) {
+        this.dir = dir;
     }
 }

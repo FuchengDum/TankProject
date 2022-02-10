@@ -29,6 +29,7 @@ class MsgDecoderTest {
 
         ByteBuf bf = ec.readOutbound();
 
+        MsgType msgType = MsgType.values()[bf.readInt()];
         int length = bf.readInt();
         int x = bf.readInt();
         int y = bf.readInt();
@@ -37,6 +38,7 @@ class MsgDecoderTest {
         Group group = Group.values()[bf.readInt()];
         UUID id = new UUID(bf.readLong(),bf.readLong());
 
+        assertEquals(MsgType.TankJoin,msgType);
         assertEquals(33,length);
         assertEquals(5,x);
         assertEquals(8,y);
@@ -55,6 +57,7 @@ class MsgDecoderTest {
         UUID id = UUID.randomUUID();
         ByteBuf buf = Unpooled.buffer();
 
+        buf.writeInt(MsgType.TankJoin.ordinal());
         buf.writeInt(33);
         buf.writeInt(5);
         buf.writeInt(8);
@@ -69,6 +72,7 @@ class MsgDecoderTest {
 
         TankJoinMsg tjm = ec.readInbound();
 
+        assertEquals(MsgType.TankJoin,tjm.getMsgType());
         assertEquals(5,tjm.getX());
         assertEquals(8,tjm.getY());
         assertEquals(Dir.D,tjm.getDir());

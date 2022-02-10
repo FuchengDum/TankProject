@@ -27,6 +27,7 @@ class MsgEncoderTest {
 
         ByteBuf bf = ec.readOutbound();
 
+        MsgType msgType = MsgType.values()[bf.readInt()];
         int length = bf.readInt();
         int x = bf.readInt();
         int y = bf.readInt();
@@ -35,6 +36,7 @@ class MsgEncoderTest {
         Group group = Group.values()[bf.readInt()];
         UUID id = new UUID(bf.readLong(),bf.readLong());
 
+        assertEquals(MsgType.TankJoin,msgType);
         assertEquals(33,length);
         assertEquals(5,x);
         assertEquals(8,y);

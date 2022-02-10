@@ -37,7 +37,7 @@ public class GameModel implements Serializable{
             this.add(new Tank(100 + 200*i,100,Dir.D,Group.BAD));
         }
 
-        this.add(new Wall(300,200,200,50));
+        //this.add(new Wall(300,200,200,50));
     }
 
     public void add(AbstractGameObject AGO){
@@ -49,7 +49,7 @@ public class GameModel implements Serializable{
         Color c = g.getColor();
         g.setColor(Color.WHITE);
 //        g.drawString("BULLETS:"+ bullets.size(),10,50);
-//        g.drawString("Enemys:"+ enermys.size(),10,70);
+        g.drawString("objects:"+ objects.size(),10,70);
 //        g.drawString("explode:"+ enermys.size(),10,90);
 
         g.setColor(c);
@@ -96,6 +96,16 @@ public class GameModel implements Serializable{
             if (o instanceof  Tank){
                 Tank t = (Tank) o;
                 if (id.equals(t.getId())) return t;
+            }
+        }
+        return null;
+    }
+
+    public Bullet findBulletByUUID(UUID bulletId) {
+        for (AbstractGameObject o : objects){
+            if (o instanceof  Bullet){
+                Bullet b = (Bullet) o;
+                if (bulletId.equals(b.getId())) return b;
             }
         }
         return null;
