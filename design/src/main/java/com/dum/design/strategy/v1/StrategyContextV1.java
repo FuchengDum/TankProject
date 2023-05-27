@@ -1,9 +1,9 @@
-package strategy.v1;
+package com.dum.design.strategy.v1;
 
 import lombok.extern.slf4j.Slf4j;
-import strategy.v1.personalService.Food;
-import strategy.v1.personalService.Hotel;
-import strategy.v1.personalService.Waimai;
+import com.dum.design.strategy.v1.personalService.Food;
+import com.dum.design.strategy.v1.personalService.Hotel;
+import com.dum.design.strategy.v1.personalService.Waimai;
 
 /**
  * 策略上下文，用于给客户端使用

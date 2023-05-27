@@ -1,8 +1,8 @@
-package strategy.v1.personalService;
+package com.dum.design.strategy.v1.personalService;
 
+import com.dum.design.strategy.v1.RewardStrategy;
 import lombok.extern.slf4j.Slf4j;
-import strategy.FoodService;
-import strategy.v1.RewardStrategy;
+import com.dum.design.strategy.FoodService;
 
 /**
  * 美食发送策略

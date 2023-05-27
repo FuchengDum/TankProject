@@ -1,8 +1,8 @@
-package strategy.v1.personalService;
+package com.dum.design.strategy.v1.personalService;
 
+import com.dum.design.strategy.WaimaiService;
+import com.dum.design.strategy.v1.RewardStrategy;
 import lombok.extern.slf4j.Slf4j;
-import strategy.WaimaiService;
-import strategy.v1.RewardStrategy;
 
 /**
  * 外卖发送策略

@@ -1,8 +1,8 @@
-package strategy.v1.client;
+package com.dum.design.strategy.v1.client;
 
 
-import strategy.v1.RewardStrategy;
-import strategy.v1.StrategyContextV1;
+import com.dum.design.strategy.v1.RewardStrategy;
+import com.dum.design.strategy.v1.StrategyContextV1;
 
 public class RewardServiceClientV1 {
 
