@@ -6,7 +6,7 @@ import com.dum.design.strategy.WaimaiService;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-
+//具体酒店服务策略
 @Service
 @Slf4j
 public class Waimai extends AbstractStrategy implements Strategy{

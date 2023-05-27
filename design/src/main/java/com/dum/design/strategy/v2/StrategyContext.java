@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.Map;
 
+//环境类，持有一个策略类的引用，提供给客户端调用
 @Service
 @Slf4j
 public class StrategyContext {
