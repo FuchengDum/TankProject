@@ -8,9 +8,9 @@ public class Task {
     // 任务的默认状态为初始化
     private TaskState state = TaskState.INIT;
     // 活动服务
-    private ActivityService activityService;
+    private ActivityService activityService =new ActivityService();
     // 任务管理器
-    private TaskManager taskManager;
+    private TaskManager taskManager = new TaskManager();
     // 使用条件分支进行任务更新
     public void updateState(ActionType actionType) {
         if (state == TaskState.INIT) {
