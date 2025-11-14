@@ -1,0 +1,18 @@
+{
+  "name": "tank-game",
+  "version": "1.0.0",
+  "description": "坦克大战游戏",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'No build step required for static site'"
+  },
+  "keywords": [
+    "game",
+    "tank",
+    "canvas"
+  ],
+  "author": "",
+  "license": "MIT"
+}
+
