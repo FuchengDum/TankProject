@@ -340,34 +340,21 @@ class Game:
 
     # 处理事件函数（单挑版）---------------------------------------------------------
     # 功能：主要就是对冷却事件的处理
-    def event_section_singled_out(self) -> None:
-        """
-        事件处理函数（单挑模式）
-
-        职责：
-        1. 处理系统事件（退出、暂停）
-        2. 处理子弹冷却事件
-        3. 处理键盘事件
-
-        注：单挑模式只有玩家1，所以比普通模式简单
-        """
+    def event_section_singled_out(self):
         for event in pygame.event.get():
-            # 系统事件
+            # 如果鼠标单击
             if event.type == pygame.MOUSEBUTTONDOWN:
                 self.game_pause()
-            elif event.type == pygame.QUIT:
+            if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-
-            # 玩家子弹冷却事件
-            elif event.type == self.MYBULLETNOTCOOLINGEVENT:
+            # 我方子弹冷却事件
+            if event.type == self.MYBULLETNOTCOOLINGEVENT:
                 self.myTank_T1.bulletNotCooling = True
-
-            # 键盘事件
-            elif event.type == pygame.KEYDOWN:
+            if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_F3:
                     self.isSoundEffect = not self.isSoundEffect
-                    self.resources.stop_sound('start')
+                    self.start_sound.stop()
     # 玩家操作检测函数--------------------------------------------------------
     # 功能：对键盘进行检测 并对玩家一和玩家二的操作进行移动
     # ========================================================================
@@ -806,59 +793,230 @@ class Game:
             setattr(self, invincible_attr, 200)
 
     def bullet_section(self) -> None:
-        """
-        子弹处理主函数（重构版）
+        # 绘制我方子弹1
+        if self.myTank_T1.bullet.life:
+            self.myTank_T1.bullet.move()
+            self.screen.blit(self.myTank_T1.bullet.bullet, self.myTank_T1.bullet.rect)
+            # 子弹 碰撞 子弹
+            for each in self.enemyBulletGroup:
+                if each.life:
+                    if pygame.sprite.collide_rect(self.myTank_T1.bullet, each):
+                        self.myTank_T1.bullet.life = False
+                        each.life = False
+                        pygame.sprite.spritecollide(self.myTank_T1.bullet, self.enemyBulletGroup, True, None)
+            # 子弹 碰撞 敌方坦克
+            if pygame.sprite.spritecollide(self.myTank_T1.bullet, self.redEnemyGroup, True, None):
+                self.prop.change()
+                if self.isSoundEffect:
+                    self.prop_sound.play()
+                self.enemyNumber -= 1
+                if not self.isEndless:
+                    self.remaining_enemy -= 1
+                self.myTank_T1.bullet.life = False
+                mid = special_effects.bulletBoom(self.myTank_T1.bullet.rect.left - 12,
+                                                 self.myTank_T1.bullet.rect.top - 12)
+                self.bulletBoomGroup.append(mid)
+            elif pygame.sprite.spritecollide(self.myTank_T1.bullet, self.greenEnemyGroup, False, None):
+                for each in self.greenEnemyGroup:
+                    if pygame.sprite.collide_rect(self.myTank_T1.bullet, each):
+                        if each.life == 1:
+                            pygame.sprite.spritecollide(self.myTank_T1.bullet, self.greenEnemyGroup, True, None)
+                            if self.isSoundEffect:
+                                self.bang_sound.play()
+                            self.enemyNumber -= 1
+                            if not self.isEndless:
+                                self.remaining_enemy -= 1
+                        elif each.life == 2:
+                            if self.isSoundEffect:
+                                self.wall_sound.play()
+                            each.life -= 1
+                            each.tank = each.enemy_3_0
+                        elif each.life == 3:
+                            if self.isSoundEffect:
+                                self.wall_sound.play()
+                            each.life -= 1
+                            each.tank = each.enemy_3_2
+                self.myTank_T1.bullet.life = False
+                mid = special_effects.bulletBoom(self.myTank_T1.bullet.rect.left - 12,
+                                                 self.myTank_T1.bullet.rect.top - 12)
+                self.bulletBoomGroup.append(mid)
+            elif pygame.sprite.spritecollide(self.myTank_T1.bullet, self.otherEnemyGroup, True, None):
+                if self.isSoundEffect:
+                    self.bang_sound.play()
+                self.enemyNumber -= 1
+                if not self.isEndless:
+                    self.remaining_enemy -= 1
+                self.myTank_T1.bullet.life = False
+                mid = special_effects.bulletBoom(self.myTank_T1.bullet.rect.left - 12,
+                                                 self.myTank_T1.bullet.rect.top - 12)
+                self.bulletBoomGroup.append(mid)
 
-        职责：
-        1. 处理玩家1子弹
-        2. 处理玩家2子弹
-        3. 处理所有敌方子弹
+            # 子弹 碰撞 brickGroup
+            if pygame.sprite.spritecollide(self.myTank_T1.bullet, self.bgMap.brickGroup, True, None):
+                if self.isSoundEffect:
+                    self.wall_sound.play()
+                self.myTank_T1.bullet.life = False
+                self.myTank_T1.bullet.rect.left, self.myTank_T1.bullet.rect.right = 3 + 12 * 24, 3 + 24 * 24
+            # 子弹 碰撞 ironGroup
+            if self.myTank_T1.bullet.strong:
+                if pygame.sprite.spritecollide(self.myTank_T1.bullet, self.bgMap.ironGroup, True, None):
+                    if self.isSoundEffect:
+                        self.wall_sound.play()
+                    self.myTank_T1.bullet.life = False
+                    self.myTank_T1.bullet.rect.left, self.myTank_T1.bullet.rect.right = 3 + 12 * 24, 3 + 24 * 24
+            else:
+                if pygame.sprite.spritecollide(self.myTank_T1.bullet, self.bgMap.ironGroup, False, None):
+                    if self.isSoundEffect:
+                        self.wall_sound.play()
+                    self.myTank_T1.bullet.life = False
+                    self.myTank_T1.bullet.rect.left, self.myTank_T1.bullet.rect.right = 3 + 12 * 24, 3 + 24 * 24
+            # 子弹 碰撞 家
+            if pygame.sprite.spritecollide(self.myTank_T1.bullet, self.bgMap.homeGroup, True, None):
+                self.overGameLoss = True
 
-        重构改进：
-        - 消除了玩家1和玩家2的重复代码（150+ 行）
-        - 提取了碰撞检测逻辑为独立方法
-        - 代码从 225 行减少到 30 行
-        """
-        # 处理玩家子弹（使用通用方法）
-        self._process_player_bullet(self.myTank_T1.bullet)
-        self._process_player_bullet(self.myTank_T2.bullet)
+        # 绘制我方子弹2 （模仿坦克1写）
+        if self.myTank_T2.bullet.life:
+            self.myTank_T2.bullet.move()
+            self.screen.blit(self.myTank_T2.bullet.bullet, self.myTank_T2.bullet.rect)
+            # 子弹 碰撞 敌方坦克
+            if pygame.sprite.spritecollide(self.myTank_T2.bullet, self.redEnemyGroup, True, None):
+                self.prop.change()
+                if self.isSoundEffect:
+                    self.prop_sound.play()
+                self.enemyNumber -= 1
+                if not self.isEndless:
+                    self.remaining_enemy -= 1
+                self.myTank_T2.bullet.life = False
+                mid = special_effects.bulletBoom(self.myTank_T2.bullet.rect.left - 12,
+                                                 self.myTank_T2.bullet.rect.top - 12)
+                self.bulletBoomGroup.append(mid)
+            elif pygame.sprite.spritecollide(self.myTank_T2.bullet, self.greenEnemyGroup, False, None):
+                for each in self.greenEnemyGroup:
+                    if pygame.sprite.collide_rect(self.myTank_T2.bullet, each):
+                        if each.life == 1:
+                            pygame.sprite.spritecollide(self.myTank_T2.bullet, self.greenEnemyGroup, True, None)
+                            if self.isSoundEffect:
+                                self.bang_sound.play()
+                            self.enemyNumber -= 1
+                            if not self.isEndless:
+                                self.remaining_enemy -= 1
+                        elif each.life == 2:
+                            if self.isSoundEffect:
+                                self.wall_sound.play()
+                            each.life -= 1
+                            each.tank = each.enemy_3_0
+                        elif each.life == 3:
+                            if self.isSoundEffect:
+                                self.wall_sound.play()
+                            each.life -= 1
+                            each.tank = each.enemy_3_2
+                self.myTank_T2.bullet.life = False
+                mid = special_effects.bulletBoom(self.myTank_T2.bullet.rect.left - 12,
+                                                 self.myTank_T2.bullet.rect.top - 12)
+                self.bulletBoomGroup.append(mid)
+            elif pygame.sprite.spritecollide(self.myTank_T2.bullet, self.otherEnemyGroup, True, None):
+                if self.isSoundEffect:
+                    self.bang_sound.play()
+                self.enemyNumber -= 1
+                if not self.isEndless:
+                    self.remaining_enemy -= 1
+                self.myTank_T2.bullet.life = False
+                mid = special_effects.bulletBoom(self.myTank_T2.bullet.rect.left - 12,
+                                                 self.myTank_T2.bullet.rect.top - 12)
+                self.bulletBoomGroup.append(mid)
 
-        # 处理敌方子弹
-        for enemy in self.allEnemyGroup:
-            # 敌人射击
-            if not enemy.bullet.life and enemy.bulletNotCooling and self.enemyCouldMove:
-                self.enemyBulletGroup.remove(enemy.bullet)
-                enemy.shoot()
-                self.enemyBulletGroup.add(enemy.bullet)
-                enemy.bulletNotCooling = False
+            # 子弹 碰撞 brickGroup
+            if pygame.sprite.spritecollide(self.myTank_T2.bullet, self.bgMap.brickGroup, True, None):
+                if self.isSoundEffect:
+                    self.wall_sound.play()
+                self.myTank_T2.bullet.life = False
+                self.myTank_T2.bullet.rect.left, self.myTank_T2.bullet.rect.right = 3 + 12 * 24, 3 + 24 * 24
+            # 子弹 碰撞 brickGroup
+            if self.myTank_T2.bullet.strong:
+                if pygame.sprite.spritecollide(self.myTank_T2.bullet, self.bgMap.ironGroup, True, None):
+                    if self.isSoundEffect:
+                        self.wall_sound.play()
+                    self.myTank_T2.bullet.life = False
+                    self.myTank_T2.bullet.rect.left, self.myTank_T2.bullet.rect.right = 3 + 12 * 24, 3 + 24 * 24
+            else:
+                if pygame.sprite.spritecollide(self.myTank_T2.bullet, self.bgMap.ironGroup, False, None):
+                    if self.isSoundEffect:
+                        self.wall_sound.play()
+                    self.myTank_T2.bullet.life = False
+                    self.myTank_T2.bullet.rect.left, self.myTank_T2.bullet.rect.right = 3 + 12 * 24, 3 + 24 * 24
+                # 子弹 碰撞 家
+            if pygame.sprite.spritecollide(self.myTank_T2.bullet, self.bgMap.homeGroup, True, None):
+                self.overGameLoss = True
+        # 绘制敌人子弹
+        for each in self.allEnemyGroup:
+            # 如果子弹没有生命，则赋予子弹生命
+            if not each.bullet.life and each.bulletNotCooling and self.enemyCouldMove:
+                self.enemyBulletGroup.remove(each.bullet)
+                each.shoot()
+                self.enemyBulletGroup.add(each.bullet)
+                each.bulletNotCooling = False
+            # 如果5毛钱特效播放完毕 并且 子弹存活 则绘制敌方子弹
+            if each.flash:
+                if each.bullet.life:
+                    # 如果敌人可以移动
+                    if self.enemyCouldMove:
+                        each.bullet.move()
+                    self.screen.blit(each.bullet.bullet, each.bullet.rect)
 
-            # 如果敌人已出现且子弹存活
-            if enemy.flash and enemy.bullet.life:
-                # 移动并渲染子弹
-                if self.enemyCouldMove:
-                    enemy.bullet.move()
-                self.screen.blit(enemy.bullet.bullet, enemy.bullet.rect)
+                    # 子弹 碰撞 我方坦克
+                    # 敌方子弹碰撞到我方坦克1
+                    if pygame.sprite.collide_rect(each.bullet, self.myTank_T1):
+                        if self.invincible_T1 > 0:
+                            if self.isSoundEffect:
+                                self.bang_sound.play()
+                            each.bullet.life = False
+                        else:
+                            if self.isSoundEffect:
+                                self.bang_sound.play()
+                            self.myTank_T1.rect.left, self.myTank_T1.rect.top = 3 + 8 * 24, 3 + 24 * 24
+                            if not self.isEndless:
+                                self.myTank_T1.life -= 1
+                            each.bullet.life = False
 
-                # 子弹击中玩家
-                self._handle_enemy_bullet_hit_player(enemy.bullet, self.myTank_T1, 1)
-                self._handle_enemy_bullet_hit_player(enemy.bullet, self.myTank_T2, 2)
+                            self.moving = 0  # 重置移动控制参数
+                            for i in range(self.myTank_T1.level + 1):
+                                self.myTank_T1.levelDown()
+                            self.invincible_T1 = 200
 
-                # 子弹击中墙壁
-                if pygame.sprite.spritecollide(enemy.bullet, self.bgMap.brickGroup, True, None):
-                    enemy.bullet.life = False
+                    # 敌方子弹碰撞到我方坦克2
+                    if pygame.sprite.collide_rect(each.bullet, self.myTank_T2):
+                        if self.invincible_T2 > 0:
+                            if self.isSoundEffect:
+                                self.bang_sound.play()
+                            each.bullet.life = False
+                        else:
+                            if self.isSoundEffect:
+                                self.bang_sound.play()
+                            self.myTank_T2.rect.left, self.myTank_T2.rect.top = 3 + 16 * 24, 3 + 24 * 24
+                            each.bullet.life = False
+                            if not self.isEndless:
+                                self.myTank_T2.life -= 1
+                            self.moving2 = 0  # 重置移动控制参数
+                            for i in range(self.myTank_T2.level + 1):
+                                self.myTank_T2.levelDown()
+                            self.invincible_T2 = 200
 
-                # 子弹击中铁块
-                if enemy.bullet.strong:
-                    if pygame.sprite.spritecollide(enemy.bullet, self.bgMap.ironGroup, True, None):
-                        enemy.bullet.life = False
-                else:
-                    if pygame.sprite.spritecollide(enemy.bullet, self.bgMap.ironGroup, False, None):
-                        enemy.bullet.life = False
+                    # 子弹 碰撞 brickGroup
+                    if pygame.sprite.spritecollide(each.bullet, self.bgMap.brickGroup, True, None):
+                        each.bullet.life = False
+                    # 子弹 碰撞 ironGroup
+                    if each.bullet.strong:
+                        if pygame.sprite.spritecollide(each.bullet, self.bgMap.ironGroup, True, None):
+                            each.bullet.life = False
+                    else:
+                        if pygame.sprite.spritecollide(each.bullet, self.bgMap.ironGroup, False, None):
+                            each.bullet.life = False
+                            # 子弹 碰撞 家
+                    if pygame.sprite.spritecollide(each.bullet, self.bgMap.homeGroup, True, None):
+                        self.overGameLoss = True
 
-                # 子弹击中基地
-                if pygame.sprite.spritecollide(enemy.bullet, self.bgMap.homeGroup, True, None):
-                    self.overGameLoss = True
-
+    # 子弹显示函数(单挑版）--------------------------------------------------------
+    # 功能：单挑模式的子弹显示
     def bullet_plate(self):
         # 绘制我方子弹1
         if self.myTank_T1.bullet.life:
@@ -949,92 +1107,121 @@ class Game:
                     self.myTank_T2.bullet.life = False
                     self.myTank_T2.bullet.rect.left, self.myTank_T2.bullet.rect.right = 3 + 12 * 24, 3 + 24 * 24
 
-    # ========================================================================
-    # 道具处理方法（重构版）
-    # ========================================================================
+    # 道具部分函数------------------------------------------------------------
+    # 功能：对道具进行更新显示 并当我方碰到道具时会触发不同效果
+    def props_section(self):
+        # 最后画食物/道具
+        if self.prop.life:
+            self.screen.blit(self.prop.image, self.prop.rect)
+            # 我方坦克碰撞 食物/道具
 
-    def _apply_prop_effect(self, tank, player_num: int, prop_kind: int) -> None:
-        """
-        应用道具效果（消除重复代码）
+            # 如果是坦克1碰到道具
+            if pygame.sprite.collide_rect(self.myTank_T1, self.prop):
+                if self.isSoundEffect:
+                    self.get_props_sound.play()
+                if self.prop.kind == 1:  # 敌人全毁
+                    if self.isSoundEffect:
+                        self.prop_boom_sound.play()
+                    for each in self.allEnemyGroup:
+                        if pygame.sprite.spritecollide(each, self.allEnemyGroup, True, None):
+                            self.enemyNumber -= 1
+                            if not self.isEndless:
+                                self.remaining_enemy -=1
+                    self.prop.life = False
+                if self.prop.kind == 2:  # 敌人静止
+                    self.enemyCouldMove = False
+                    self.prop.life = False
+                if self.prop.kind == 3:  # 子弹增强
+                    self.myTank_T1.bullet.strong = True
+                    self.prop.life = False
+                if self.prop.kind == 4:  # 家得到保护
+                    for x, y in [(11, 23), (12, 23), (13, 23), (14, 23), (11, 24), (14, 24), (11, 25), (14, 25)]:
+                        self.bgMap.iron = wall.Iron()
+                        self.bgMap.iron.rect.left, self.bgMap.iron.rect.top = 3 + x * 24, 3 + y * 24
+                        self.bgMap.ironGroup.add(self.bgMap.iron)
+                    self.prop.life = False
+                    self.iron_time = 200
+                if self.prop.kind == 5:  # 坦克无敌
+                    self.prop.life = False
+                    self.invincible_T1 = 200
+                if self.prop.kind == 6:  # 坦克升级
+                    self.myTank_T1.levelUp()
+                    self.prop.life = False
+                if self.prop.kind == 7:  # 坦克生命+1
+                    if self.myTank_T1.life < 3:
+                        self.myTank_T1.life += 1
+                    self.prop.life = False
 
-        Args:
-            tank: 玩家坦克对象
-            player_num: 玩家编号 (1 或 2)
-            prop_kind: 道具类型 (1-7)
-        """
-        # 道具效果映射（使用字典替代 if-elif 链）
-        if prop_kind == 1:  # 敌人全毁
-            if self.isSoundEffect:
-                self.resources.play_sound('prop_boom')
-            for enemy in self.allEnemyGroup:
-                if pygame.sprite.spritecollide(enemy, self.allEnemyGroup, True, None):
-                    self._handle_enemy_killed()
+            # 如果是坦克二碰到道具
+            elif pygame.sprite.collide_rect(self.myTank_T2, self.prop):
+                if self.isSoundEffect:
+                    self.get_props_sound.play()
+                if self.prop.kind == 1:  # 敌人全毁
+                    self.prop_boom_sound.play()
+                    for each in self.allEnemyGroup:
+                        if pygame.sprite.spritecollide(each, self.allEnemyGroup, True, None):
+                            self.enemyNumber -= 1
+                            if not self.isEndless:
+                                self.remaining_enemy -=1
+                    self.prop.life = False
+                if self.prop.kind == 2:  # 敌人静止
+                    self.enemyCouldMove = False
+                    self.prop.life = False
+                if self.prop.kind == 3:  # 子弹增强
+                    self.myTank_T2.bullet.strong = True
+                    self.prop.life = False
+                if self.prop.kind == 4:  # 家得到保护
+                    for x, y in [(11, 23), (12, 23), (13, 23), (14, 23), (11, 24), (14, 24), (11, 25), (14, 25)]:
+                        self.bgMap.iron = wall.Iron()
+                        self.bgMap.iron.rect.left, self.bgMap.iron.rect.top = 3 + x * 24, 3 + y * 24
+                        self.bgMap.ironGroup.add(self.bgMap.iron)
+                    self.prop.life = False
+                    self.iron_time = 200
+                if self.prop.kind == 5:  # 坦克无敌
+                    self.prop.life = False
+                    self.invincible_T2 = 200
+                if self.prop.kind == 6:  # 坦克升级
+                    self.myTank_T2.levelUp()
+                    self.prop.life = False
+                if self.prop.kind == 7:  # 坦克生命+1
+                    if self.myTank_T2.life < 3:
+                        self.myTank_T2.life += 1
+                    self.prop.life = False
 
-        elif prop_kind == 2:  # 敌人静止
-            self.enemyCouldMove = False
-
-        elif prop_kind == 3:  # 子弹增强
-            tank.bullet.strong = True
-
-        elif prop_kind == 4:  # 家得到保护
-            base_positions = [
-                (11, 23), (12, 23), (13, 23), (14, 23),
-                (11, 24), (14, 24), (11, 25), (14, 25)
-            ]
-            for x, y in base_positions:
-                iron = wall.Iron()
-                iron.rect.left, iron.rect.top = 3 + x * 24, 3 + y * 24
-                self.bgMap.ironGroup.add(iron)
-            self.iron_time = 200
-
-        elif prop_kind == 5:  # 坦克无敌
-            invincible_attr = 'invincible_T1' if player_num == 1 else 'invincible_T2'
-            setattr(self, invincible_attr, 200)
-
-        elif prop_kind == 6:  # 坦克升级
-            tank.levelUp()
-
-        elif prop_kind == 7:  # 坦克生命+1
-            if tank.life < 3:
-                tank.life += 1
-
-        # 消耗道具
-        self.prop.life = False
-
-    def props_section(self) -> None:
-        """
-        道具处理主函数（重构版）
-
-        职责：
-        1. 渲染道具
-        2. 检测玩家与道具碰撞
-        3. 应用道具效果
-
-        重构改进：
-        - 消除了玩家1和玩家2的重复代码（60+ 行）
-        - 使用通用方法处理道具效果
-        - 代码从 82 行减少到 20 行
-        """
-        if not self.prop.life:
-            return
-
-        # 渲染道具
-        self.screen.blit(self.prop.image, self.prop.rect)
-
-        # 检测玩家1碰撞道具
-        if pygame.sprite.collide_rect(self.myTank_T1, self.prop):
-            if self.isSoundEffect:
-                self.resources.play_sound('get_props')
-            self._apply_prop_effect(self.myTank_T1, 1, self.prop.kind)
-
-        # 检测玩家2碰撞道具
-        elif pygame.sprite.collide_rect(self.myTank_T2, self.prop):
-            if self.isSoundEffect:
-                self.resources.play_sound('get_props')
-            self._apply_prop_effect(self.myTank_T2, 2, self.prop.kind)
-
+    # 游戏运行函数（普通和无尽模式）----------------------------------------------------
+    # 功能：运行此函数就将运行游戏
+    # 接口：checkpoint就是选择关卡 1-35分别是对应关卡  99则是自建地图
     def game_running(self,checkpoint,isEndless):
         self.isEndless = isEndless
+        # 创建地图 但是不用只是当作一个中间变量
+        map_num = [
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        ]
 
         # 如果checkpoint是自建关卡
         if checkpoint == 99:
@@ -1045,8 +1232,7 @@ class Game:
                 return
             self.bgMap.checkpoint(checkpoint, mid)
         else:
-            # 不传递 map_num，让 checkpoint 方法从 JSON 文件加载地图
-            self.bgMap.checkpoint(checkpoint)
+            self.bgMap.checkpoint(checkpoint, map_num)
 
         # 创建敌方 坦克（在一二三处出现）
         for i in range(1, 4):
@@ -1257,8 +1443,7 @@ class Game:
                 return
             self.bgMap.checkpoint(checkpoint, mid)
         else:
-            # 不传递 map_num，让 checkpoint 方法从 JSON 文件加载地图
-            self.bgMap.checkpoint(checkpoint)
+            self.bgMap.checkpoint(checkpoint, map_num)
 
         self.myTank_T1.rect.left , self.myTank_T1.rect.top = 3 + 12 * 24, 3 + 24 * 24
         self.myTank_T2.rect.left , self.myTank_T2.rect.top = 3 + 12 * 24, 3 + 0 * 24
