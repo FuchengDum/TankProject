@@ -2,8 +2,6 @@ import pygame
 from path_utils import resource_path
 import random
 """
-修改时间：2021.12.15
-修改人：2019051604048 詹孝东
 模块描述：
 该模块是道具类
 道具类继承了pygame的精灵类，从而实现道具的相关功能 详情情况下方描述
